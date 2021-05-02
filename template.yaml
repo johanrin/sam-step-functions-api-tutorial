@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-step-functions-api-tutorial
+
+  Sample SAM Template for sam-step-functions-api-tutorial
+
+Resources:
+  HelloWorldApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+
+  HelloWorldStateMachine:
+    Type: AWS::Serverless::StateMachine # More info about State Machine Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-statemachine.html
+    Properties:
+      DefinitionUri: statemachine/hello_world.asl.json
+      DefinitionSubstitutions:
+        HelloWorldFunctionArn: !GetAtt HelloWorldFunction.Arn
+      Events:
+        HelloWorldApiEvent:
+          Type: Api
+          Properties:
+            Method: post
+            Path: /
+            RestApiId: 
+              Ref: HelloWorldApi
+      Policies: # Find out more about SAM policy templates: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        - LambdaInvokePolicy:
+            FunctionName: !Ref HelloWorldFunction
+
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
+    Properties:
+      CodeUri: functions/hello-world/
+      Handler: app.lambdaHandler
+      Runtime: nodejs14.x
+
+Outputs:
+  HelloWorldApi:
+    Description: "API Gateway endpoint URL to call Hello World State Machine"
+    Value: !Sub "https://${HelloWorldApi}.execute-api.${AWS::Region}.amazonaws.com/dev/"
+  HelloWorldStateMachineArn:
+    Description: "Hello World state machine ARN"
+    Value: !Ref HelloWorldStateMachine
+  HelloWorldStateMachineRole:
+    Description: "IAM Role created for Hello World state machine based on the specified SAM Policy Templates"
+    Value: !GetAtt HelloWorldStateMachineRole.Arn

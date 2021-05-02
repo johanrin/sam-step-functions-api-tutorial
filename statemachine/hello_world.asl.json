@@ -1,0 +1,11 @@
+{
+    "Comment": "A state machine that executes a Hello World Lambda function.",
+    "StartAt": "Hello",
+    "States": {
+        "Hello": {
+            "Type": "Task",
+            "Resource": "${HelloWorldFunctionArn}",
+            "End": true
+        }
+    }
+}
